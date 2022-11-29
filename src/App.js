@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { Card } from "./start/Card";
 import { StartButton } from "./start/StartButton";
 
 function App() {
@@ -91,9 +92,9 @@ function App() {
             Player:
             {playerState
               .map((e) => {
-                return e.name;
+                return <Card value={e.name} symbol={e.symbol}></Card>;
               })
-              .join(" ")}
+              }
           </p>
         )}
         {dealerState && (
