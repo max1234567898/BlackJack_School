@@ -1,6 +1,5 @@
 import { useState } from "react";
 import "./App.css";
-import { RestartButton } from "./restart/RestartButton";
 import { StartButton } from "./start/StartButton";
 
 function App() {
@@ -117,7 +116,18 @@ function App() {
               })
               .reduce((acc, cur) => {
                 if (acc + cur > 21) {
-                  return<p>you lose</p>;
+                  return (
+                    <div>
+                      <button
+                        onClick={() => {
+                          setPlayerState();
+                          setDealerState();
+                        }}
+                      >
+                        Restart
+                      </button>
+                    </div>
+                  );
                 }
                 return acc + cur;
               })}
