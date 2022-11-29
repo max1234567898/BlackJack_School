@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { RestartButton } from "./restart/RestartButton";
 import { StartButton } from "./start/StartButton";
 
 function App() {
@@ -26,13 +27,30 @@ function App() {
   const getRandomCard = () => {
     const randomNumberCard = Math.floor(Math.random() * card.length);
     const randomNumberSymbol = Math.floor(Math.random() * symbols.length);
-    const randomCard = card.slice(randomNumberCard, randomNumberCard + 1);
-    const randomSymbol = symbols.slice(
-      randomNumberSymbol,
-      randomNumberSymbol + 1
-    );
+    const randomCard = card[randomNumberCard];
+    const randomSymbol = symbols[randomNumberSymbol];
 
-    return [randomCard, randomSymbol];
+    const score = {
+      A: 11,
+      Q: 10,
+      K: 10,
+      J: 10,
+      10: 10,
+      9: 9,
+      8: 8,
+      7: 7,
+      6: 6,
+      5: 5,
+      4: 4,
+      3: 3,
+      2: 2,
+    };
+
+    return {
+      name: randomCard,
+      symbol: randomSymbol,
+      score: score[randomCard],
+    };
   };
 
   return (
@@ -50,10 +68,12 @@ function App() {
         {!playerState && (
           <StartButton
             onClick={() => {
-              const dealerRandomCard = getRandomCard();
-              setDealerState(dealerRandomCard);
-              const randomCard = getRandomCard();
-              setPlayerState(randomCard);
+              const dealerRandomCard1 = getRandomCard();
+              const dealerRandomCard2 = getRandomCard();
+              setDealerState([dealerRandomCard1, dealerRandomCard2]);
+              const randomCard1 = getRandomCard();
+              const randomCard2 = getRandomCard();
+              setPlayerState([randomCard1, randomCard2]);
             }}
           ></StartButton>
         )}
@@ -67,9 +87,54 @@ function App() {
             Hit
           </button>
         )}
+        {playerState && (
+          <p>
+            Player:
+            {playerState
+              .map((e) => {
+                return e.name;
+              })
+              .join(" ")}
+          </p>
+        )}
+        {dealerState && (
+          <p>
+            Dealer:
+            {dealerState
+              .map((e) => {
+                return e.name;
+              })
+              .join(" ")}
+          </p>
+        )}
 
-        {playerState && <p>Player{playerState.join(",")}</p>}
-        {dealerState && <p>Dealer{dealerState.join(",")}</p>}
+        {playerState && (
+          <p>
+            Player:
+            {playerState
+              .map((e) => {
+                return e.score;
+              })
+              .reduce((acc, cur) => {
+                if (acc + cur > 21) {
+                  return<p>you lose</p>;
+                }
+                return acc + cur;
+              })}
+          </p>
+        )}
+        {dealerState && (
+          <p>
+            Dealer:
+            {dealerState
+              .map((e) => {
+                return e.score;
+              })
+              .reduce((acc, cur) => {
+                return acc + cur;
+              })}
+          </p>
+        )}
       </div>
     </div>
   );
