@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./App.css";
+import { StandButton } from "./stand/StandButton";
 import { Card } from "./start/Card";
 import { StartButton } from "./start/StartButton";
 
@@ -87,6 +88,7 @@ function App() {
             Hit
           </button>
         )}
+        <StandButton onClick={StandButton} ></StandButton>
         {playerState && (
           <p>
             Player:
