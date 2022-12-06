@@ -4,11 +4,16 @@ import { StandButton } from "./stand/StandButton";
 import { Card } from "./start/Card";
 import { StartButton } from "./start/StartButton";
 
+type TScoreMap = {
+  [key: string]: number
+}
+
 function App() {
   const [playerState, setPlayerState] = useState();
   const [dealerState, setDealerState] = useState();
- // Karten noch aus dem Deck löschen nach dem sie gezogen
-  const card = [
+ 
+  // Karten noch aus dem Deck löschen nach dem sie gezogen
+ const card = [
     "2",
     "3",
     "4",
@@ -26,27 +31,35 @@ function App() {
 
   const symbols = ["Hearts", "Clubs", "Diamonds", "Spades"];
 
-  const getRandomCard = () => {
+
+  type TGetRandomCard = {
+    name: string;
+    symbol: string;
+    score: number;
+  }
+
+  const getRandomCard = (): TGetRandomCard => {
     const randomNumberCard = Math.floor(Math.random() * card.length);
     const randomNumberSymbol = Math.floor(Math.random() * symbols.length);
     const randomCard = card[randomNumberCard];
     const randomSymbol = symbols[randomNumberSymbol];
 
     // Ass als 11 oder 1 entgegen nehmen
-    const score = {
-      A: 11,
-      Q: 10,
-      K: 10,
-      J: 10,
-      10: 10,
-      9: 9,
-      8: 8,
-      7: 7,
-      6: 6,
-      5: 5,
-      4: 4,
-      3: 3,
-      2: 2,
+   
+    const score: TScoreMap = {
+      "A": 11,
+      "Q": 10,
+      "K": 10,
+      "J": 10,
+      "10": 10,
+      "9": 9,
+      "8": 8,
+      "7": 7,
+      "6": 6,
+      "5": 5,
+      "4": 4,
+      "3": 3,
+      "2": 2,
     };
 
     return {
