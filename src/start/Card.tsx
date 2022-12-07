@@ -1,6 +1,6 @@
 import './Cards.css';
 
-export const Card = ({value, symbol}) => {
+export const Card = ({value, symbol} : { value: string; symbol: string }) => {
     let entity;
     symbol === "Diamonds" ? (entity = "&diams;") : (entity = "&" + symbol.toLowerCase() + ";")
     return <div className={`card ${symbol.toLowerCase()}`}>

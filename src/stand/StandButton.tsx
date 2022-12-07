@@ -1,3 +1,7 @@
-export const StandButton = ({onClick}) =>{
-    return <button onClick={onClick}>Stand</button>
+
+type TStandButtonProps = {
+    handleClick: () => JSX.Element | undefined
+}
+export const StandButton = ({handleClick}: TStandButtonProps ) =>{
+    return <button onClick={handleClick}>Stand</button>
 }

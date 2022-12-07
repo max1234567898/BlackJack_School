@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { uid } from "uid";
 import "./App.css";
 import { StandButton } from "./stand/StandButton";
 import { Card } from "./start/Card";
@@ -8,9 +9,19 @@ type TScoreMap = {
   [key: string]: number
 }
 
+ type TGetRandomCard = {
+    id: string;
+    name: string;
+    symbol: string;
+    score: number;
+  }
+
+type TDealerState = TGetRandomCard[]
+type TPlayerState = TGetRandomCard[]
+
 function App() {
-  const [playerState, setPlayerState] = useState();
-  const [dealerState, setDealerState] = useState();
+  const [playerState, setPlayerState] = useState<TPlayerState | []>([]);
+  const [dealerState, setDealerState] = useState<TDealerState | []>([]);
  
   // Karten noch aus dem Deck löschen nach dem sie gezogen
  const card = [
@@ -30,13 +41,6 @@ function App() {
   ];
 
   const symbols = ["Hearts", "Clubs", "Diamonds", "Spades"];
-
-
-  type TGetRandomCard = {
-    name: string;
-    symbol: string;
-    score: number;
-  }
 
   const getRandomCard = (): TGetRandomCard => {
     const randomNumberCard = Math.floor(Math.random() * card.length);
@@ -63,11 +67,15 @@ function App() {
     };
 
     return {
+      id: uid(16),
       name: randomCard,
       symbol: randomSymbol,
       score: score[randomCard],
     };
   };
+
+
+  const totalPlayerScore = playerState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0);
 
   return (
     <div className="App">
@@ -81,7 +89,7 @@ function App() {
         </div>
       </div>
       <div className="App-header">
-        {!playerState && (
+        {playerState.length === 0 && (
           <StartButton
             onClick={() => {
               const dealerRandomCard1 = getRandomCard();
@@ -93,33 +101,29 @@ function App() {
             }}
           ></StartButton>
         )}
-        {playerState && (
+        {playerState.length !== 0 && (
           <button
             onClick={() => {
               const playerScore =
               dealerState.map((e) => {
                 return e.score;
               })
-              .reduce((acc, cur) => acc + cur);
+              .reduce((acc, cur) => acc + cur, 0);
 
               if (playerScore === 21) {
                 return <p>YOU WON!</p>
               }
               const randomCard = getRandomCard();
-              setPlayerState([...playerState, randomCard]);
+              setPlayerState( [...playerState, randomCard]);
             }}
           >
             Hit
           </button>
         )}
-        {dealerState && (
+        {dealerState.length !== 0 && (
         <StandButton 
-            onClick={() => {
-              const dealerScore =
-              dealerState.map((e) => {
-                return e.score;
-              })
-              .reduce((acc, cur) => acc + cur);
+            handleClick={() => {
+              const dealerScore = dealerState.map((e) => e.score).reduce((acc, cur) => acc + cur);
 
               if (dealerScore < 17) {
               const randomCard = getRandomCard();
@@ -131,67 +135,65 @@ function App() {
               }
           } ></StandButton>
         )}
-        {playerState && (
+        {playerState.length !== 0 && (
           <>
           <p>Player:</p>
           <div className="card-wrapper">
             {playerState
               .map((e) => {
-                return <Card value={e.name} symbol={e.symbol}></Card>;
+                return <Card key={e.id} value={e.name} symbol={e.symbol}></Card>;
               })
               }
           </div>
+          
+        {playerState.length !== 0 && (
+        <div>
+          {playerState
+            .map((e) => e.score)
+            .reduce((acc, cur) => acc + cur, 0 )}
+        </div>
+        )}
           </>
         )}
-        {dealerState && (
+
+        {dealerState.length !== 0 && (
           <>
           <p>Dealer:</p>
           <div className="card-wrapper">
             {dealerState
               .map((e) => {
-                return <Card value={e.name} symbol={e.symbol}></Card>;
+                return <Card key={e.id} value={e.name} symbol={e.symbol}></Card>;
               })
               }
           </div>
           </>
         )}
 
-        {playerState && (
+       
+
+        {playerState.length !== 0 && (
           <div>
-            Player:
-            {playerState
-              .map((e) => {
-                return e.score;
-              })
-              .reduce((acc, cur) => {
-                if (acc + cur > 21) {
-                  return (
-                    <div>
-                      <button
-                        onClick={() => {
-                          setPlayerState();
-                          setDealerState();
-                        }}
-                      >
-                        Restart
-                      </button>
-                    </div>
-                  );
-                }
-                return acc + cur;
-              })}
+            {totalPlayerScore > 21 && (
+              <div>
+                <button
+                  onClick={() => {
+                    setPlayerState([]);
+                    setDealerState([]);
+                  }}
+                >
+                  Restart
+                </button>
+              </div>
+            ) 
+            }
           </div>
         )}
-        {dealerState && (
+        
+        {dealerState.length !== 0 && (
           <div>
-            Dealer:
             {dealerState
-              .map((e) => {
-                return e.score;
-              })
-              .reduce((acc, cur) => {
-                return acc + cur;
-              })}
+              .map((e) => e.score)
+              .reduce((acc, cur) => acc + cur, 0 )}
           </div>
         )}
       </div>
