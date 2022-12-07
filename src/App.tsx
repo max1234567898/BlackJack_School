@@ -6,25 +6,34 @@ import { Card } from "./start/Card";
 import { StartButton } from "./start/StartButton";
 
 type TScoreMap = {
-  [key: string]: number
+  [key: string]: number;
+};
+
+type TGetRandomCard = {
+  id: string;
+  name: string;
+  symbol: string;
+  score: number;
+};
+
+enum GameStates {
+  Start,
+  Player,
+  Dealer,
+  Result,
 }
 
- type TGetRandomCard = {
-    id: string;
-    name: string;
-    symbol: string;
-    score: number;
-  }
-
-type TDealerState = TGetRandomCard[]
-type TPlayerState = TGetRandomCard[]
+type TDealerState = TGetRandomCard[];
+type TPlayerState = TGetRandomCard[];
+type TGameState = GameStates;
 
 function App() {
   const [playerState, setPlayerState] = useState<TPlayerState | []>([]);
   const [dealerState, setDealerState] = useState<TDealerState | []>([]);
- 
+  const [gameState, setGameState] = useState<TGameState>(GameStates.Start);
+
   // Karten noch aus dem Deck löschen nach dem sie gezogen
- const card = [
+  const card = [
     "2",
     "3",
     "4",
@@ -49,12 +58,12 @@ function App() {
     const randomSymbol = symbols[randomNumberSymbol];
 
     // Ass als 11 oder 1 entgegen nehmen
-   
+
     const score: TScoreMap = {
-      "A": 11,
-      "Q": 10,
-      "K": 10,
-      "J": 10,
+      A: 11,
+      Q: 10,
+      K: 10,
+      J: 10,
       "10": 10,
       "9": 9,
       "8": 8,
@@ -74,8 +83,25 @@ function App() {
     };
   };
 
+  const totalPlayerScore = playerState
+    .map((e) => e.score)
+    .reduce((acc, cur) => acc + cur, 0);
 
-  const totalPlayerScore = playerState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0);
+  function playerGetsTwoCards() {
+    const dealerRandomCard1 = getRandomCard();
+    const dealerRandomCard2 = getRandomCard();
+    setDealerState([dealerRandomCard1, dealerRandomCard2]);
+    const playerRandomCard1 = getRandomCard();
+    const playerRandomCard2 = getRandomCard();
+    setPlayerState([playerRandomCard1, playerRandomCard2]);
+    if (totalPlayerScore === 21) {
+      checkWinner();
+    }
+  }
+
+  function checkWinner() {
+    console.log("check winner");
+  }
 
   return (
     <div className="App">
@@ -89,87 +115,82 @@ function App() {
         </div>
       </div>
       <div className="App-header">
-        {playerState.length === 0 && (
+        {gameState === GameStates.Start && (
           <StartButton
             onClick={() => {
-              const dealerRandomCard1 = getRandomCard();
-              const dealerRandomCard2 = getRandomCard();
-              setDealerState([dealerRandomCard1, dealerRandomCard2]);
-              const randomCard1 = getRandomCard();
-              const randomCard2 = getRandomCard();
-              setPlayerState([randomCard1, randomCard2]);
+              playerGetsTwoCards();
+              setGameState(GameStates.Player);
             }}
           ></StartButton>
         )}
-        {playerState.length !== 0 && (
-          <button
-            onClick={() => {
-              const playerScore =
-              dealerState.map((e) => {
-                return e.score;
-              })
-              .reduce((acc, cur) => acc + cur, 0);
+        {gameState === GameStates.Player && (
+          <>
+            <button
+              onClick={() => {
+                const playerScore = dealerState
+                  .map((e) => {
+                    return e.score;
+                  })
+                  .reduce((acc, cur) => acc + cur, 0);
 
-              if (playerScore === 21) {
-                return <p>YOU WON!</p>
-              }
-              const randomCard = getRandomCard();
-              setPlayerState( [...playerState, randomCard]);
-            }}
-          >
-            Hit
-          </button>
-        )}
-        {dealerState.length !== 0 && (
-        <StandButton 
-            handleClick={() => {
-              const dealerScore = dealerState.map((e) => e.score).reduce((acc, cur) => acc + cur);
+                if (playerScore === 21) {
+                  return <p>YOU WON!</p>;
+                }
+                const randomCard = getRandomCard();
+                setPlayerState([...playerState, randomCard]);
+              }}
+            >
+              Hit
+            </button>
+            <StandButton
+              handleClick={() => {
+                const dealerScore = dealerState
+                  .map((e) => e.score)
+                  .reduce((acc, cur) => acc + cur);
 
-              if (dealerScore < 17) {
-              const randomCard = getRandomCard();
-              setDealerState([...dealerState, randomCard]);
-              }
-              else if (dealerScore > 21) {
-                return (<p>Dealer busted, YOU WIN!</p>);
-              }
-              }
-          } ></StandButton>
+                if (dealerScore < 17) {
+                  const randomCard = getRandomCard();
+                  setDealerState([...dealerState, randomCard]);
+                } else if (dealerScore > 21) {
+                  return <p>Dealer busted, YOU WIN!</p>;
+                }
+              }}
+            ></StandButton>
+          </>
         )}
         {playerState.length !== 0 && (
           <>
-          <p>Player:</p>
-          <div className="card-wrapper">
-            {playerState
-              .map((e) => {
-                return <Card key={e.id} value={e.name} symbol={e.symbol}></Card>;
-              })
-              }
-          </div>
-          
-        {playerState.length !== 0 && (
-        <div>
-          {playerState
-            .map((e) => e.score)
-            .reduce((acc, cur) => acc + cur, 0 )}
-        </div>
-        )}
+            <p>Player:</p>
+            <div className="card-wrapper">
+              {playerState.map((e) => {
+                return (
+                  <Card key={e.id} value={e.name} symbol={e.symbol}></Card>
+                );
+              })}
+            </div>
+
+            {playerState.length !== 0 && (
+              <div>
+                {playerState
+                  .map((e) => e.score)
+                  .reduce((acc, cur) => acc + cur, 0)}
+              </div>
+            )}
           </>
         )}
 
         {dealerState.length !== 0 && (
           <>
-          <p>Dealer:</p>
-          <div className="card-wrapper">
-            {dealerState
-              .map((e) => {
-                return <Card key={e.id} value={e.name} symbol={e.symbol}></Card>;
-              })
-              }
-          </div>
+            <p>Dealer:</p>
+            <div className="card-wrapper">
+              {dealerState.map((e) => {
+                return (
+                  <Card key={e.id} value={e.name} symbol={e.symbol}></Card>
+                );
+              })}
+            </div>
           </>
         )}
-
-       
 
         {playerState.length !== 0 && (
           <div>
@@ -184,16 +205,13 @@ function App() {
                   Restart
                 </button>
               </div>
-            ) 
-            }
+            )}
           </div>
         )}
-        
+
         {dealerState.length !== 0 && (
           <div>
-            {dealerState
-              .map((e) => e.score)
-              .reduce((acc, cur) => acc + cur, 0 )}
+            {dealerState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0)}
           </div>
         )}
       </div>
