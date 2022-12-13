@@ -93,20 +93,28 @@ function App() {
     return currentState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0);
   };
 
-  function playerGetsTwoCards() {
-    const dealerRandomCard1 = getRandomCard();
-    const dealerRandomCard2 = getRandomCard();
-    setDealerState([dealerRandomCard1, dealerRandomCard2]);
-    const playerRandomCard1 = getRandomCard();
-    const playerRandomCard2 = getRandomCard();
-    setPlayerState([playerRandomCard1, playerRandomCard2]);
-    if (calculateTotalScore(playerState) === 21) {
-      const winner = checkWinner();
-      setGameState(GameStates.Result);
-    }
-  }
+  const getInitialCards = () => {
+    setDealerState([getRandomCard(), getRandomCard()]);
+    setPlayerState([getRandomCard(), getRandomCard()]);
+  };
 
-  function checkWinner() {
+  const getAdditionalPlayerCard = () => {
+    setPlayerState([...playerState, getRandomCard()]);
+  };
+
+  const getAdditionalDealerCards = () => {
+    const currentScore = calculateTotalScore(dealerState);
+    const newCardsArray = [];
+    while (
+      currentScore + newCardsArray.reduce((acc, curr) => acc + curr.score, 0) <
+      17
+    ) {
+      newCardsArray.push(getRandomCard());
+    }
+    setDealerState([...dealerState, ...newCardsArray]);
+  };
+
+  const checkWinner = () => {
     const totalPlayerScore = calculateTotalScore(playerState);
     const totalDealerScore = calculateTotalScore(dealerState);
 
@@ -123,7 +131,17 @@ function App() {
     } else {
       return WinnerStates.Draw;
     }
-  }
+  };
+
+  const hasPlayerWon = () => {
+    return checkWinner() === WinnerStates.Player;
+  };
+
+  const hasPlayerLost = () => {
+    return calculateTotalScore(playerState) > 21;
+  };
+
+  const winner = checkWinner();
 
   return (
     <div className="App">
@@ -131,58 +149,57 @@ function App() {
         <div className="titel-img">
           <img src="./titel.jpg" alt="cards" className="titel-img"></img>
         </div>
-        Black Jack
+        Black Jack {gameState}
         <div className="titel-img">
           <img src="./titel.jpg" alt="cards" className="titel-img"></img>
         </div>
       </div>
       <div className="App-header">
+        {gameState === GameStates.Result && (
+          <p>
+            {winner === WinnerStates.Player
+              ? "Congratulations, You've won!"
+              : winner === WinnerStates.Dealer
+              ? "Game Over, You've lost!"
+              : "Draw! No Winner in this round."}
+          </p>
+        )}
+
         {gameState === GameStates.Start && (
           <StartButton
             onClick={() => {
-              playerGetsTwoCards();
-              setGameState(GameStates.Player);
+              getInitialCards();
+              if (hasPlayerWon()) {
+                setGameState(GameStates.Result);
+              } else {
+                setGameState(GameStates.Player);
+              }
             }}
           ></StartButton>
         )}
+
         {gameState === GameStates.Player && (
           <>
             <button
               onClick={() => {
-                const playerScore = dealerState
-                  .map((e) => {
-                    return e.score;
-                  })
-                  .reduce((acc, cur) => acc + cur, 0);
-
-                if (playerScore === 21) {
-                  return <p>YOU WON!</p>;
+                getAdditionalPlayerCard();
+                if (hasPlayerWon() || hasPlayerLost()) {
+                  setGameState(GameStates.Result);
                 }
-                const randomCard = getRandomCard();
-                setPlayerState([...playerState, randomCard]);
               }}
             >
               Hit
             </button>
             <StandButton
               handleClick={() => {
-                const dealerScore = dealerState
-                  .map((e) => e.score)
-                  .reduce((acc, cur) => acc + cur);
-
-                console.log(dealerScore);
-
-                if (dealerScore < 17) {
-                  const randomCard = getRandomCard();
-                  setDealerState([...dealerState, randomCard]);
-                } else if (dealerScore > 21) {
-                  return <p>Dealer busted, YOU WIN!</p>;
-                }
+                setGameState(GameStates.Dealer);
+                getAdditionalDealerCards();
+                setGameState(GameStates.Result);
               }}
             ></StandButton>
           </>
         )}
-        {playerState.length !== 0 && (
+        {gameState === GameStates.Result && (
           <div>
             <div>
               <button
