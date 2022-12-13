@@ -23,6 +23,12 @@ enum GameStates {
   Result,
 }
 
+enum WinnerStates {
+  Player,
+  Dealer,
+  Draw,
+}
+
 type TDealerState = TGetRandomCard[];
 type TPlayerState = TGetRandomCard[];
 type TGameState = GameStates;
@@ -83,9 +89,9 @@ function App() {
     };
   };
 
-  const totalPlayerScore = playerState
-    .map((e) => e.score)
-    .reduce((acc, cur) => acc + cur, 0);
+  const calculateTotalScore = (currentState: TDealerState | TPlayerState) => {
+    return currentState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0);
+  };
 
   function playerGetsTwoCards() {
     const dealerRandomCard1 = getRandomCard();
@@ -94,13 +100,29 @@ function App() {
     const playerRandomCard1 = getRandomCard();
     const playerRandomCard2 = getRandomCard();
     setPlayerState([playerRandomCard1, playerRandomCard2]);
-    if (totalPlayerScore === 21) {
-      checkWinner();
+    if (calculateTotalScore(playerState) === 21) {
+      const winner = checkWinner();
+      setGameState(GameStates.Result);
     }
   }
 
   function checkWinner() {
-    console.log("check winner");
+    const totalPlayerScore = calculateTotalScore(playerState);
+    const totalDealerScore = calculateTotalScore(dealerState);
+
+    if (
+      (totalPlayerScore > totalDealerScore && totalPlayerScore <= 21) ||
+      totalDealerScore > 21
+    ) {
+      return WinnerStates.Player;
+    } else if (
+      (totalDealerScore > totalPlayerScore && totalDealerScore <= 21) ||
+      totalPlayerScore > 21
+    ) {
+      return WinnerStates.Dealer;
+    } else {
+      return WinnerStates.Draw;
+    }
   }
 
   return (
@@ -148,6 +170,8 @@ function App() {
                   .map((e) => e.score)
                   .reduce((acc, cur) => acc + cur);
 
+                console.log(dealerScore);
+
                 if (dealerScore < 17) {
                   const randomCard = getRandomCard();
                   setDealerState([...dealerState, randomCard]);
@@ -158,6 +182,22 @@ function App() {
             ></StandButton>
           </>
         )}
+        {playerState.length !== 0 && (
+          <div>
+            <div>
+              <button
+                onClick={() => {
+                  setGameState(GameStates.Start);
+                  setPlayerState([]);
+                  setDealerState([]);
+                }}
+              >
+                Restart
+              </button>
+            </div>
+          </div>
+        )}
+
         {playerState.length !== 0 && (
           <>
             <p>Player:</p>
@@ -190,23 +230,6 @@ function App() {
               })}
             </div>
           </>
-        )}
-
-        {playerState.length !== 0 && (
-          <div>
-            {totalPlayerScore > 21 && (
-              <div>
-                <button
-                  onClick={() => {
-                    setPlayerState([]);
-                    setDealerState([]);
-                  }}
-                >
-                  Restart
-                </button>
-              </div>
-            )}
-          </div>
         )}
 
         {dealerState.length !== 0 && (
