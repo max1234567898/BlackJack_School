@@ -114,6 +114,18 @@ function App() {
     setDealerState([...dealerState, ...newCardsArray]);
   };
 
+  const showDealerScore = () => {
+    if (gameState === GameStates.Dealer || gameState === GameStates.Result) {
+      return (
+        <div>
+          {dealerState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0)}
+        </div>
+      );
+    } else {
+      return <div>{dealerState.map((e) => e.score).slice(0, 1)}</div>;
+    }
+  };
+
   const checkWinner = () => {
     const totalPlayerScore = calculateTotalScore(playerState);
     const totalDealerScore = calculateTotalScore(dealerState);
@@ -248,12 +260,7 @@ function App() {
             </div>
           </>
         )}
-
-        {dealerState.length !== 0 && (
-          <div>
-            {dealerState.map((e) => e.score).reduce((acc, cur) => acc + cur, 0)}
-          </div>
-        )}
+        {showDealerScore()}
       </div>
     </div>
   );
