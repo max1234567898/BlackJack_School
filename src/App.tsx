@@ -100,7 +100,11 @@ function App() {
   };
 
   const getAdditionalPlayerCard = () => {
-    setPlayerState([...playerState, getRandomCard()]);
+    const randomCard = getRandomCard();
+    if (randomCard.name === "A" && calculateTotalScore(playerState) >= 11) {
+      randomCard.score = 1;
+    }
+    setPlayerState([...playerState, randomCard]);
   };
 
   const getAdditionalDealerCards = () => {
@@ -129,11 +133,20 @@ function App() {
 
   useEffect(() => {
     const totalPlayerScore = calculateTotalScore(playerState);
+
+    // Checks if totalPlayerScore is = or above 21
+    if (totalPlayerScore === 21) {
+      getAdditionalDealerCards();
+      setGameState(GameStates.Result);
+    } else if (totalPlayerScore > 21) {
+      setGameState(GameStates.Result);
+    }
+  }, [playerState]);
+
+  useEffect(() => {
+    const totalPlayerScore = calculateTotalScore(playerState);
     const totalDealerScore = calculateTotalScore(dealerState);
 
-    if (totalPlayerScore >= 21) {
-      setGameState(GameStates.Result);
-      }
     if (gameState === GameStates.Result) {
       if (
         (totalPlayerScore > totalDealerScore && totalPlayerScore <= 21) ||
@@ -154,13 +167,7 @@ function App() {
   return (
     <div className="App">
       <div className="size ">
-        <div className="titel-img">
-          <img src="./titel.jpg" alt="cards" className="titel-img"></img>
-        </div>
-        Black Jack {gameState}
-        <div className="titel-img">
-          <img src="./titel.jpg" alt="cards" className="titel-img"></img>
-        </div>
+        <img src="./blackjack_logo-removebg-preview.png" alt="bjlogo" />
       </div>
       <div className="App-header">
         {gameState === GameStates.Result && (
