@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { uid } from "uid";
 import "./App.css";
 import { StandButton } from "./stand/StandButton";
@@ -37,6 +37,7 @@ function App() {
   const [playerState, setPlayerState] = useState<TPlayerState | []>([]);
   const [dealerState, setDealerState] = useState<TDealerState | []>([]);
   const [gameState, setGameState] = useState<TGameState>(GameStates.Start);
+  const [winnerState, setWinnerState] = useState<WinnerStates | null>(null);
 
   // Karten noch aus dem Deck löschen nach dem sie gezogen
   const card = [
@@ -126,34 +127,29 @@ function App() {
     }
   };
 
-  const checkWinner = () => {
+  useEffect(() => {
     const totalPlayerScore = calculateTotalScore(playerState);
     const totalDealerScore = calculateTotalScore(dealerState);
 
-    if (
-      (totalPlayerScore > totalDealerScore && totalPlayerScore <= 21) ||
-      totalDealerScore > 21
-    ) {
-      return WinnerStates.Player;
-    } else if (
-      (totalDealerScore > totalPlayerScore && totalDealerScore <= 21) ||
-      totalPlayerScore > 21
-    ) {
-      return WinnerStates.Dealer;
-    } else {
-      return WinnerStates.Draw;
+    if (totalPlayerScore >= 21) {
+      setGameState(GameStates.Result);
+      }
+    if (gameState === GameStates.Result) {
+      if (
+        (totalPlayerScore > totalDealerScore && totalPlayerScore <= 21) ||
+        totalDealerScore > 21
+      ) {
+        setWinnerState(WinnerStates.Player);
+      } else if (
+        (totalDealerScore > totalPlayerScore && totalDealerScore <= 21) ||
+        totalPlayerScore > 21
+      ) {
+        setWinnerState(WinnerStates.Dealer);
+      } else {
+        setWinnerState(WinnerStates.Draw);
+      }
     }
-  };
-
-  const hasPlayerWon = () => {
-    return checkWinner() === WinnerStates.Player;
-  };
-
-  const hasPlayerLost = () => {
-    return calculateTotalScore(playerState) > 21;
-  };
-
-  const winner = checkWinner();
+  }, [playerState, dealerState, gameState]);
 
   return (
     <div className="App">
@@ -169,9 +165,9 @@ function App() {
       <div className="App-header">
         {gameState === GameStates.Result && (
           <p>
-            {winner === WinnerStates.Player
+            {winnerState === WinnerStates.Player
               ? "Congratulations, You've won!"
-              : winner === WinnerStates.Dealer
+              : winnerState === WinnerStates.Dealer
               ? "Game Over, You've lost!"
               : "Draw! No Winner in this round."}
           </p>
@@ -181,11 +177,7 @@ function App() {
           <StartButton
             onClick={() => {
               getInitialCards();
-              if (hasPlayerWon()) {
-                setGameState(GameStates.Result);
-              } else {
-                setGameState(GameStates.Player);
-              }
+              setGameState(GameStates.Player);
             }}
           ></StartButton>
         )}
@@ -195,9 +187,6 @@ function App() {
             <button
               onClick={() => {
                 getAdditionalPlayerCard();
-                if (hasPlayerWon() || hasPlayerLost()) {
-                  setGameState(GameStates.Result);
-                }
               }}
             >
               Hit
@@ -252,10 +241,14 @@ function App() {
           <>
             <p>Dealer:</p>
             <div className="card-wrapper">
-              {dealerState.map((e) => {
-                return (
-                  <Card key={e.id} value={e.name} symbol={e.symbol}></Card>
-                );
+              {dealerState.map((e, index) => {
+                if (gameState === GameStates.Player && index === 1) {
+                  return <Card key={e.id}></Card>;
+                } else {
+                  return (
+                    <Card key={e.id} value={e.name} symbol={e.symbol}></Card>
+                  );
+                }
               })}
             </div>
           </>
