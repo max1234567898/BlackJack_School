@@ -189,24 +189,6 @@ function App() {
           ></StartButton>
         )}
 
-        {gameState === GameStates.Player && (
-          <>
-            <button
-              onClick={() => {
-                getAdditionalPlayerCard();
-              }}
-            >
-              Hit
-            </button>
-            <StandButton
-              handleClick={() => {
-                setGameState(GameStates.Dealer);
-                getAdditionalDealerCards();
-                setGameState(GameStates.Result);
-              }}
-            ></StandButton>
-          </>
-        )}
         {gameState === GameStates.Result && (
           <div>
             <div>
@@ -261,6 +243,27 @@ function App() {
           </>
         )}
         {showDealerScore()}
+
+        {gameState === GameStates.Player && (
+          <>
+            <div className="gap-for-buttons">
+              <button
+                onClick={() => {
+                  getAdditionalPlayerCard();
+                }}
+              >
+                Hit
+              </button>
+              <StandButton
+                handleClick={() => {
+                  setGameState(GameStates.Dealer);
+                  getAdditionalDealerCards();
+                  setGameState(GameStates.Result);
+                }}
+              ></StandButton>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
